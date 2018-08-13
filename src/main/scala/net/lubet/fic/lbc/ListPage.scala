@@ -4,6 +4,9 @@ import java.io.File
 import java.net.URL
 
 import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
+import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
+import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.dsl.DSL._
 
 import scala.io.Source
 
@@ -23,4 +26,14 @@ object ListPage {
 
 class ListPage (val doc : Browser#DocumentType ){
  val toHtml = doc.toHtml
+
+  lazy val getTotalAnnouncesCount : Int = {
+    (doc >> text("span._2ilNG")).replace(" ","").toInt
+  }
+
+  lazy val getAnnouncesUrl : List[String] = {
+    (doc >> elementList("a.clearfix.trackable"))
+      .map( _ >> attr("href"))
+      .map("https://www.leboncoin.fr"+_)
+  }
 }

@@ -7,7 +7,7 @@ import org.apache.spark.sql.SparkSession
 
 class BaseurlDFTest extends FunSuite {
 
-
+/*
   //val warehouseLocation = "file:"+System.getProperty("user.dir")+"/spark"
   val warehouseLocation = "file:///Users/olivi/IdeaProjects/funimmocrawl/spark"
   Logger.getLogger("org").setLevel(Level.OFF)
@@ -19,5 +19,5 @@ class BaseurlDFTest extends FunSuite {
     val bu = BaseurlDF.load(spark)
     assert(bu.count()>0)
   }
-
+*/
 }

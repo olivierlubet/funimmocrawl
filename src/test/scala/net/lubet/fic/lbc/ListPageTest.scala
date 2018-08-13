@@ -16,7 +16,23 @@ class ListPageTest extends FunSuite {
   }
 
   test("load File") {
-    val l = ListPage.load(Source.fromInputStream(getClass.getResourceAsStream("/lbc.listpage.html")))
+    val l = ListPage.load(Source.fromInputStream(getClass.getResourceAsStream("/lbc.listpage.html"), "UTF-8"))
     assertResult("Ventes immobilières, maisons à vendre Ile-de-France - nos annonces leboncoin")(l.doc >> text("title"))
+  }
+
+  test("page number") {
+    val l = ListPage.load(Source.fromInputStream(getClass.getResourceAsStream("/lbc.listpage.html"), "UTF-8"))
+    assertResult("83 236")(l.doc >> text("span._2ilNG"))
+    assertResult(83236)(l.getTotalAnnouncesCount)
+  }
+
+  test("announces") {
+    val l = ListPage.load(Source.fromInputStream(getClass.getResourceAsStream("/lbc.listpage.html"), "UTF-8"))
+    val items = l.doc >> elementList("a.clearfix.trackable")
+    assertResult(35)(items.size)
+    assertResult("/ventes_immobilieres/1105277901.htm/")(items.head >> attr("href"))
+
+    assertResult(35)(l.getAnnouncesUrl.size)
+    assertResult("https://www.leboncoin.fr/ventes_immobilieres/1105277901.htm/")(l.getAnnouncesUrl.head)
   }
 }

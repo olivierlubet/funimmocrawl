@@ -10,6 +10,7 @@ import org.apache.spark.sql.{Row, SparkSession}
 
 
 class AppTest extends FunSuite {
+  /*
   val warehouseLocation = "file:///Users/olivi/IdeaProjects/funimmocrawl/spark"
   Logger.getLogger("org").setLevel(Level.OFF)
   Logger.getLogger("akka").setLevel(Level.OFF)
@@ -21,4 +22,5 @@ class AppTest extends FunSuite {
     import spark.implicits._
     val buPages = bu.map { u: Row => ListPage.load(new URL(u.getString(0))).toHtml }
   }
+  */
 }
