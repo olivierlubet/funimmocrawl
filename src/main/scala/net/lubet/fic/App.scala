@@ -2,33 +2,39 @@ package net.lubet.fic
 
 import java.net.URL
 
-import net.lubet.fic.lbc.ListPage
+import net.lubet.fic.lbc.{AnnouncePage, ListPage}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
-
 
 object App extends App {
   println("FunImmoCrawl")
 
-  val warehouseLocation = "file:///Users/olivi/IdeaProjects/funimmocrawl/spark"
-  Logger.getLogger("org").setLevel(Level.OFF)
-  Logger.getLogger("akka").setLevel(Level.OFF)
-  val spark = SparkSession.builder.master("local").appName("Test").config("spark.sql.warehouse.dir", warehouseLocation).getOrCreate()
 
+  import Context.spark.implicits._
 
-  import spark.implicits._
-
-  val listUrls: Dataset[String] = BaseurlDF.load(spark).flatMap { urlR: Row =>
+  val listUrls: Dataset[String] = Database.selectBaseUrls.flatMap { urlR: Row =>
     val urlS = urlR.getString(0)
     val l = ListPage.load(new URL(urlS))
-    val nbPages = (l.getTotalAnnouncesCount / l.getAnnouncesUrl.size) + 1
-    (1 to nbPages).map(urlS + "p-" + _)
+    val nbPages = (l.getTotalAnnouncesCount / l.getAnnouncesUrl.size)
+    //(1 to nbPages).map(urlS + "p-" + _)
+    (1 to nbPages).map(urlS + "&page=" + _)
   }
 
   listUrls.take(5).foreach(println)
 
-  val detailsUrls = listUrls.flatMap { url: String => ListPage.load(new URL(url)).getAnnouncesUrl }
+  val detailsUrls: Dataset[String] = listUrls.flatMap { url: String => ListPage.load(new URL(url)).getAnnouncesUrl }
 
   detailsUrls.take(5).foreach(println)
-}
 
+  detailsUrls.foreach { url: String =>
+    Database.insertLastSeen(url)
+    val a = AnnouncePage.load(new URL(url))
+    Database.insertAnnounceDetail(url,a)
+  }
+
+  Database.selectAnnounceDetail.show()
+
+  Database.selectAnnounceDetail.coalesce(1).write.option("header",true).csv("spark/announces.csv")
+
+  Context.spark.close
+}
