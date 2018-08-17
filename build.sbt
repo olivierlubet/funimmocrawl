@@ -21,3 +21,6 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-hive" % sparkVersion,
   "mysql" % "mysql-connector-java" % "5.1.6"
 )
+
+// https://logging.apache.org/log4j/2.x/maven-artifacts.html
+libraryDependencies += "org.apache.logging.log4j" % "log4j-api-scala_2.12" % "11.0"

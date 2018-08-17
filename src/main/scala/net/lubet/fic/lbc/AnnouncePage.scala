@@ -8,6 +8,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors._
 
 import scala.io.Source
+import scala.util.matching.Regex
 
 object AnnouncePage {
   def load(url: URL): AnnouncePage = {
@@ -26,12 +27,12 @@ object AnnouncePage {
 class AnnouncePage(val doc: Browser#DocumentType) {
   lazy val toHtml = doc.toHtml
 
-  lazy val toJSON = {
-
-  }
-
   def getTitle: Option[String] = {
     doc >?> text("h1._1KQme")
+  }
+
+  def getUrl: Option[String] = {
+    doc >?> attr("content")("meta[property=og:url]")
   }
 
   def getPrice: Option[Long] = {
@@ -73,29 +74,56 @@ class AnnouncePage(val doc: Browser#DocumentType) {
     doc >?> element("meta[name=description") >> attr("content")
   }
 
-  def getCity: Option[String] = {
-    doc >?> text("div[data-qa-id=adview_location_informations] span")
-  }
 
-  def getChargesIncluded:Option[String] ={
+
+  def getChargesIncluded: Option[String] = {
     doc >?> text("div[data-qa-id=criteria_item_charges_included] div._3Jxf3")
   }
 
-  def getFurnished:Option[String]={
+  def getFurnished: Option[String] = {
     doc >?> text("div[data-qa-id=criteria_item_furnished] div._3Jxf3")
   }
 
-  def getEnergyRate:Option[String]={
+  def getEnergyRate: Option[String] = {
     doc >?> text("div[data-qa-id=criteria_item_energy_rate] div._1sd0z")
   }
 
-  def getGES:Option[String]={
+  def getGES: Option[String] = {
     doc >?> text("div[data-qa-id=criteria_item_ges] div._1sd0z")
   }
 
-  def getDepartment: Option[String] = {
-    //doc >> text("div[data-qa-id=breadcrumb-item-1] a")
-    Option("")
+  def getRegion: Option[String] = {
+    findFirstGroupIn(""""region_name":"([^"]+)"""".r)
   }
 
+  def getDepartment: Option[String] = {
+    findFirstGroupIn(""""department_name":"([^"]+)"""".r)
+  }
+
+  def getCity: Option[String] = {
+    //doc >?> text("div[data-qa-id=adview_location_informations] span")
+    findFirstGroupIn(""""city":"([^"]+)"""".r)
+  }
+
+  def getZipCode: Option[String] = {
+    findFirstGroupIn(""""zipcode":"([^"]+)"""".r)
+  }
+
+  def getLat: Option[String] = {
+    findFirstGroupIn(""""lat":([^,]+)."""".r)
+  }
+  def getLng: Option[String] = {
+    findFirstGroupIn(""""lng":([^,]+)."""".r)
+  }
+
+  def getCategory: Option[String] = {
+    findFirstGroupIn(""""category_name":"([^"]+)"""".r)
+  }
+
+  def findFirstGroupIn(r: Regex): Option[String] = {
+    r.findFirstMatchIn(toHtml) match {
+      case Some(e) => Option(e.group(1))
+      case None => None
+    }
+  }
 }

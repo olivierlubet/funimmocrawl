@@ -27,24 +27,30 @@ object Database {
     """.stripMargin)
 
 
-  Context.spark.sql("DROP table if exists announce")
+  Context.spark.sql("DROP TABLE IF EXISTS announce")
 
   Context.spark.sql(
     """
       |CREATE TABLE IF NOT EXISTS announce(
       |url string,
       |date_record date,
+      |category string,
       |title string,
       |type string,
       |date_published string,
       |price string,
       |room_count string,
       |surface string,
-      |city string,
       |charges_included string,
       |furnished string,
       |energy_rate string,
-      |gez string
+      |gez string,
+      |region string,
+      |department string,
+      |city string,
+      |zipcode string,
+      |lat string,
+      |lng string
       |)
       |USING PARQUET
     """.stripMargin)
@@ -60,7 +66,7 @@ object Database {
       """.stripMargin)
   }
 
-  // Non satisfaisant dans le sens ou il n'existe pas d'opérationinverse à xml.Utility.escape
+  // Non satisfaisant dans le sens ou il n'existe pas d'opération inverse à xml.Utility.escape
   def insertAnnounceCache(url:String, html:String): Unit ={
     Context.spark.sql(
       s"""
@@ -73,17 +79,23 @@ object Database {
     Context.spark.sql(
       s"""
          |INSERT INTO announce VALUES ("$url",now(),
+         |"${a.getCategory.getOrElse("")}",
          |"${a.getTitle.getOrElse("")}",
          |"${a.getType.getOrElse("")}",
          |"${a.getPublishDate.getOrElse("")}",
          |"${a.getPrice.getOrElse("")}",
          |"${a.getRoomsCount.getOrElse("")}",
          |"${a.getSurface.getOrElse("")}",
-         |"${a.getCity.getOrElse("")}",
          |"${a.getChargesIncluded.getOrElse("")}",
          |"${a.getFurnished.getOrElse("")}",
          |"${a.getEnergyRate.getOrElse("")}",
-         |"${a.getGES.getOrElse("")}"
+         |"${a.getGES.getOrElse("")}",
+         |"${a.getRegion.getOrElse("")}",
+         |"${a.getDepartment.getOrElse("")}",
+         |"${a.getCity.getOrElse("")}",
+         |"${a.getZipCode.getOrElse("")}",
+         |"${a.getLat.getOrElse("")}",
+         |"${a.getLng.getOrElse("")}"
          |)
       """.stripMargin)
   }
@@ -92,6 +104,13 @@ object Database {
     Context.spark.sql(
       """
         |SELECT * FROM announce
+      """.stripMargin)
+  }
+
+  def selectAnnounceSeen:DataFrame={
+    Context.spark.sql(
+      """
+        |SELECT distinct url FROM announce
       """.stripMargin)
   }
 
