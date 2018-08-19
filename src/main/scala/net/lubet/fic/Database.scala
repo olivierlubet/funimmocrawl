@@ -6,76 +6,75 @@ import org.apache.spark.sql.DataFrame
 
 object Database {
 
-  Context.spark.sql(
-    """
-      |CREATE TABLE IF NOT EXISTS last_seen(
-      |url string,
-      |date_last_seen date
-      |)
-      |USING PARQUET
-    """.stripMargin)
+  initLastSeen
+  initAnnounce
 
+  def initLastSeen: DataFrame = {
+    //Context.spark.sql("DROP TABLE IF EXISTS last_seen")
 
-  Context.spark.sql(
-    """
-      |CREATE TABLE IF NOT EXISTS announce_cache(
-      |url string,
-      |date_cache date,
-      |html string
-      |)
-      |USING PARQUET
-    """.stripMargin)
+    Context.spark.sql(
+      """
+        |CREATE TABLE IF NOT EXISTS last_seen(
+        |url string,
+        |date_last_seen date
+        |)
+        |USING PARQUET
+      """.stripMargin)
 
+  }
 
-  Context.spark.sql("DROP TABLE IF EXISTS announce")
+  def initAnnounce: DataFrame = {
+    //Context.spark.sql("DROP TABLE IF EXISTS announce")
 
-  Context.spark.sql(
-    """
-      |CREATE TABLE IF NOT EXISTS announce(
-      |url string,
-      |date_record date,
-      |category string,
-      |title string,
-      |type string,
-      |date_published string,
-      |price string,
-      |room_count string,
-      |surface string,
-      |charges_included string,
-      |furnished string,
-      |energy_rate string,
-      |gez string,
-      |region string,
-      |department string,
-      |city string,
-      |zipcode string,
-      |lat string,
-      |lng string
-      |)
-      |USING PARQUET
-    """.stripMargin)
+    Context.spark.sql(
+      """
+        |CREATE TABLE IF NOT EXISTS announce(
+        |url string,
+        |date_record date,
+        |category string,
+        |title string,
+        |type string,
+        |date_published string,
+        |price string,
+        |room_count string,
+        |surface string,
+        |charges_included string,
+        |furnished string,
+        |energy_rate string,
+        |gez string,
+        |region string,
+        |department string,
+        |city string,
+        |zipcode string,
+        |lat string,
+        |lng string
+        |)
+        |USING PARQUET
+      """.stripMargin)
+
+  }
+
 
   def selectBaseUrls: DataFrame = {
     Context.spark.read.option("header", value = true).csv("spark/baseurl.csv")
   }
 
-  def insertLastSeen(url:String): Unit = {
+  def insertLastSeen(url: String): Unit = {
     Context.spark.sql(
       s"""
-        |INSERT INTO last_seen VALUES ("$url",now())
+         |INSERT INTO last_seen VALUES ("$url",now())
       """.stripMargin)
   }
 
   // Non satisfaisant dans le sens ou il n'existe pas d'opération inverse à xml.Utility.escape
-  def insertAnnounceCache(url:String, html:String): Unit ={
+  def insertAnnounceCache(url: String, html: String): Unit = {
     Context.spark.sql(
       s"""
          |INSERT INTO announce_cache VALUES ("$url",now(),"${xml.Utility.escape(html)}")
       """.stripMargin)
   }
 
-  def insertAnnounceDetail (url:String, a:AnnouncePage): Unit = {
-    import Context.spark.implicits._
+  def insertAnnounceDetail(url: String, a: AnnouncePage): Unit = {
     Context.spark.sql(
       s"""
          |INSERT INTO announce VALUES ("$url",now(),
@@ -107,7 +106,7 @@ object Database {
       """.stripMargin)
   }
 
-  def selectAnnounceSeen:DataFrame={
+  def selectAnnounceSeen: DataFrame = {
     Context.spark.sql(
       """
         |SELECT distinct url FROM announce

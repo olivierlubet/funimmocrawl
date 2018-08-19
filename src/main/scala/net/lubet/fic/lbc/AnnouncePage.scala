@@ -43,8 +43,18 @@ class AnnouncePage(val doc: Browser#DocumentType) {
   }
 
 
+  /**
+    * input : String containing 15/08/2018 à 23h53
+    * @return String containing a date with ISO8601 format yyyy-mm-dd
+    */
   def getPublishDate: Option[String] = {
-    doc >?> text("div[data-qa-id=adview_date]")
+    val date = raw".*(\d{2})/(\d{2})/(\d{4}).*".r
+    doc >?> text("div[data-qa-id=adview_date]") match {
+      case Some (d) => d match {
+        case date(d,m,y) => Option(s"$y-$m-$d")
+      }
+      case None => None
+    }
   }
 
   def getType: Option[String] = {
