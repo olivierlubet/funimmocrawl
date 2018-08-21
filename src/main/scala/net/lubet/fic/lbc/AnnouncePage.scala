@@ -3,7 +3,7 @@ package net.lubet.fic.lbc
 import java.io.File
 import java.net.URL
 
-import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
+import net.ruippeixotog.scalascraper.browser.{Browser, HtmlUnitBrowser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors._
 
@@ -12,15 +12,15 @@ import scala.util.matching.Regex
 
 object AnnouncePage {
   def load(url: URL): AnnouncePage = {
-    new AnnouncePage(JsoupBrowser().get(url.toString))
+    new AnnouncePage(HtmlUnitBrowser().get(url.toString))
   }
 
   def load(source: Source): AnnouncePage = {
-    new AnnouncePage(JsoupBrowser().parseString(source.getLines.mkString))
+    new AnnouncePage(HtmlUnitBrowser().parseString(source.getLines.mkString))
   }
 
   def load(file: File): AnnouncePage = {
-    new AnnouncePage(JsoupBrowser().parseFile(file.getPath))
+    new AnnouncePage(HtmlUnitBrowser().parseFile(file.getPath))
   }
 }
 

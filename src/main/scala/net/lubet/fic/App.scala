@@ -18,10 +18,17 @@ object App extends App  {
   println("Listing pages to crawl for announces")
   val listUrls: Dataset[String] = Database.selectBaseUrls.flatMap { urlR: Row =>
     val urlS = urlR.getString(0)
-    val l = ListPage.load(new URL(urlS))
-    val nbPages = l.getTotalAnnouncesCount / l.getAnnouncesUrl.size
-    //(1 to nbPages).map(urlS + "p-" + _)
-    (1 to nbPages).map(urlS + "&page=" + _)
+
+    try {
+      val l = ListPage.load(new URL(urlS))
+      val nbPages = l.getTotalAnnouncesCount / l.getAnnouncesUrl.size
+      //(1 to nbPages).map(urlS + "p-" + _)
+      (1 to nbPages).map(urlS + "&page=" + _)
+    } catch {
+      case e:Throwable =>
+        println(s"Error with $urlS",e)
+        List.empty
+    }
   }
 
   println("Listing announces URL")
