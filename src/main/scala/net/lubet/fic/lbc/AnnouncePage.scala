@@ -3,7 +3,7 @@ package net.lubet.fic.lbc
 import java.io.File
 import java.net.URL
 
-import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors._
 
@@ -24,7 +24,7 @@ object AnnouncePage {
   }
 }
 
-class AnnouncePage(val doc: Browser#DocumentType) {
+class AnnouncePage(val doc: net.ruippeixotog.scalascraper.browser.Browser#DocumentType) {
   lazy val toHtml = doc.toHtml
 
   def getTitle: Option[String] = {

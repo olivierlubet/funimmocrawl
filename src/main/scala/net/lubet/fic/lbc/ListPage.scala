@@ -3,7 +3,7 @@ package net.lubet.fic.lbc
 import java.io.File
 import java.net.URL
 
-import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
@@ -25,7 +25,7 @@ object ListPage {
   }
 }
 
-class ListPage (val doc : Browser#DocumentType ){
+class ListPage (val doc : net.ruippeixotog.scalascraper.browser.Browser#DocumentType ){
  val toHtml: String = doc.toHtml
 
   lazy val getTotalAnnouncesCount : Int = {

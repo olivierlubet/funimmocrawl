@@ -54,7 +54,6 @@ object Database {
 
   }
 
-
   def selectBaseUrls: DataFrame = {
     Context.spark.read.option("header", value = true).csv("spark/baseurl.csv")
   }
@@ -66,13 +65,6 @@ object Database {
       """.stripMargin)
   }
 
-  // Non satisfaisant dans le sens ou il n'existe pas d'opération inverse à xml.Utility.escape
-  def insertAnnounceCache(url: String, html: String): Unit = {
-    Context.spark.sql(
-      s"""
-         |INSERT INTO announce_cache VALUES ("$url",now(),"${xml.Utility.escape(html)}")
-      """.stripMargin)
-  }
 
   def insertAnnounceDetail(url: String, a: AnnouncePage): Unit = {
     Context.spark.sql(
@@ -99,6 +91,12 @@ object Database {
       """.stripMargin)
   }
 
+  def insertAnnounceJson(partition: String, a: String): Unit = {
+    Context.spark.sql(
+      s"""
+         |INSERT INTO announce_json VALUES ("$partition","$a")
+      """.stripMargin)
+  }
   def selectAnnounceDetail: DataFrame = {
     Context.spark.sql(
       """

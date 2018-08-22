@@ -22,5 +22,9 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.6"
 )
 
-// https://logging.apache.org/log4j/2.x/maven-artifacts.html
-libraryDependencies += "org.apache.logging.log4j" % "log4j-api-scala_2.12" % "11.0"
+// https://mvnrepository.com/artifact/org.scala-lang.modules/scala-xml
+libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.1.0"
+
+
+// https://mvnrepository.com/artifact/org.json4s/json4s-native
+libraryDependencies += "org.json4s" %% "json4s-native" % "3.6.0"
