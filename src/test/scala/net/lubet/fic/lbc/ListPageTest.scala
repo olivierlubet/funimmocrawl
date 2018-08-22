@@ -22,8 +22,8 @@ class ListPageTest extends FunSuite {
 
   test("page number") {
     val l = ListPage.load(Source.fromInputStream(getClass.getResourceAsStream("/lbc.listpage.html"), "UTF-8"))
-    assertResult("83 236")(l.doc >> text("span._2ilNG"))
-    assertResult(83236)(l.getTotalAnnouncesCount)
+
+    assertResult("124126")(l.getTotalAnnouncesCount)
   }
 
   test("announces") {
