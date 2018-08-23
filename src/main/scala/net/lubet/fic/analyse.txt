@@ -1,0 +1,139 @@
+
+
+scala> df_u.printSchema
+root
+ |-- ad_type: string (nullable = true)
+ |-- attributes: array (nullable = true)
+ |    |-- element: struct (containsNull = true)
+ |    |    |-- generic: boolean (nullable = true)
+ |    |    |-- key: string (nullable = true)
+ |    |    |-- key_label: string (nullable = true)
+ |    |    |-- value: string (nullable = true)
+ |    |    |-- value_label: string (nullable = true)
+ |-- body: string (nullable = true)
+ |-- category_id: string (nullable = true)
+ |-- category_name: string (nullable = true)
+ |-- expiration_date: string (nullable = true)
+ |-- first_publication_date: string (nullable = true)
+ |-- has_phone: boolean (nullable = true)
+ |-- images: struct (nullable = true)
+ |    |-- nb_images: long (nullable = true)
+ |    |-- small_url: string (nullable = true)
+ |    |-- thumb_url: string (nullable = true)
+ |    |-- urls: array (nullable = true)
+ |    |    |-- element: string (containsNull = true)
+ |    |-- urls_large: array (nullable = true)
+ |    |    |-- element: string (containsNull = true)
+ |    |-- urls_thumb: array (nullable = true)
+ |    |    |-- element: string (containsNull = true)
+ |-- index_date: string (nullable = true)
+ |-- list_id: long (nullable = true)
+ |-- location: struct (nullable = true)
+ |    |-- city: string (nullable = true)
+ |    |-- city_label: string (nullable = true)
+ |    |-- department_id: string (nullable = true)
+ |    |-- department_name: string (nullable = true)
+ |    |-- is_shape: boolean (nullable = true)
+ |    |-- lat: double (nullable = true)
+ |    |-- lng: double (nullable = true)
+ |    |-- provider: string (nullable = true)
+ |    |-- region_id: string (nullable = true)
+ |    |-- region_name: string (nullable = true)
+ |    |-- source: string (nullable = true)
+ |    |-- zipcode: string (nullable = true)
+ |-- options: struct (nullable = true)
+ |    |-- booster: boolean (nullable = true)
+ |    |-- gallery: boolean (nullable = true)
+ |    |-- has_option: boolean (nullable = true)
+ |    |-- photosup: boolean (nullable = true)
+ |    |-- sub_toplist: boolean (nullable = true)
+ |    |-- urgent: boolean (nullable = true)
+ |-- owner: struct (nullable = true)
+ |    |-- name: string (nullable = true)
+ |    |-- no_salesmen: boolean (nullable = true)
+ |    |-- pro_rates_link: string (nullable = true)
+ |    |-- siren: string (nullable = true)
+ |    |-- store_id: string (nullable = true)
+ |    |-- type: string (nullable = true)
+ |    |-- user_id: string (nullable = true)
+ |-- price: array (nullable = true)
+ |    |-- element: long (containsNull = true)
+ |-- subject: string (nullable = true)
+ |-- url: string (nullable = true)
+
+ scala> sql("select distinct category_id,category_name from announce_unique").show
+ +-----------+-------------------+
+ |category_id|      category_name|
+ +-----------+-------------------+
+ |         13|Bureaux & Commerces|
+ |         11|        Colocations|
+ |          9|Ventes immobiliÞres|
+ |         10|          Locations|
+ +-----------+-------------------+
+
+
+ scala> sql("select distinct key,key_label from announce_attribute").show
+ +----------------+-------------------+
+ |             key|          key_label|
+ +----------------+-------------------+
+ |          square|            Surface|
+ |             ges|                GES|
+ |      custom_ref|          RÚfÚrence|
+ |           rooms|             PiÞces|
+ |  pro_rates_link|               null|
+ |       furnished|MeublÚ / Non meublÚ|
+ |real_estate_type|       Type de bien|
+ |charges_included|  Charges comprises|
+ |    fai_included|         Honoraires|
+ |     energy_rate|     Classe Únergie|
+ +----------------+-------------------+
+
+
+ scala> sql("select distinct value,value_label from announce_attribute where key='real_estate_type'").show
+ +-----+-----------+
+ |value|value_label|
+ +-----+-----------+
+ |    2|Appartement|
+ |    4|    Parking|
+ |    1|     Maison|
+ |    5|      Autre|
+ |    3|    Terrain|
+ +-----+-----------+
+
+ scala> sql("select distinct value,value_label from announce_attribute where key='fai_included'").show
+ +-----+-----------+
+ |value|value_label|
+ +-----+-----------+
+ |    2|        Non|
+ |    1|        Oui|
+ +-----+-----------+
+
+ scala> sql("select distinct value,value_label from announce_attribute where key='energy_rate'").show
+ +-----+----------------+
+ |value|     value_label|
+ +-----+----------------+
+ |    v|          Vierge|
+ |    i| I (751 et plus)|
+ |    h|H (de 591 Ó 750)|
+ |    f|F (de 331 Ó 450)|
+ |    d|D (de 151 Ó 230)|
+ |    e|E (de 231 Ó 330)|
+ |    b|  B (de 51 Ó 90)|
+ |    c| C (de 91 Ó 150)|
+ |    a| A (moins de 50)|
+ |    g|G (de 451 Ó 590)|
+ +-----+----------------+
+
+ scala> sql("select list_id, count(price) from announce_unique group by list_id having count(price)>2").show
+ +-------+------------+
+ |list_id|count(price)|
+ +-------+------------+
+ +-------+------------+
+
+ scala> sql("select list_id, price[0] from announce_unique").show
+ +----------+--------+
+ |   list_id|price[0]|
+ +----------+--------+
+ |1407943548|  620000|
+ |1329466454|  450000|
+
