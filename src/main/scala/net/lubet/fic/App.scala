@@ -3,11 +3,8 @@ package net.lubet.fic
 import java.net.URL
 
 import net.lubet.fic.lbc.JsonListPage
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.feature._
-import org.apache.spark.ml.regression._
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 
 object App extends App {
   println("FunImmoCrawl")
@@ -40,7 +37,12 @@ object App extends App {
         spark.createDataset(
           JsonListPage.load(new URL(url)).announces
         )
-      ).write.mode(SaveMode.Append).json("spark/announce_json")
+      )
+        .withColumn("part", lit(partition))
+        .repartition($"part")
+        .write
+        .mode(SaveMode.Append)
+        .json("spark/announce_json")
     }
     catch {
       case e: Throwable =>
@@ -52,15 +54,26 @@ object App extends App {
   println("Preparing data")
   val df = Context.spark.read.json("spark/announce_json")
   df.createOrReplaceTempView("announce")
+
+  val df_p = df
+  val df_tojoin = df_p.
+    groupBy($"list_id").
+    agg(
+      min($"part").alias("first_seen"),
+      max($"part").alias("last_seen")
+    )
+
   //df.printSchema
-  val df_u = df.distinct
+  // Objectif : récupérer la plus ancienne et la plus récente date où l'on a récupéré l'annonce
+  val df_u = df
+    .drop("part")
+    .distinct
+    .join(df_tojoin.select(), df.col("list_id") === df_tojoin.col("list_id"))
+
 
   df_u.createOrReplaceTempView("announce_unique")
   df_u.coalesce(1).write.mode(SaveMode.Overwrite).json("spark/announce_json_unique")
-
-
-  //sql("select * from announce_attribute").show
-
+  //val df_u = Context.spark.read.json("spark/announce_json_unique")
 
   println("Closing spark")
   Context.spark.close
