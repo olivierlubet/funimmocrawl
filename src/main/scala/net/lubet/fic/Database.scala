@@ -6,8 +6,8 @@ import org.apache.spark.sql.DataFrame
 
 object Database {
 
-  initLastSeen
-  initAnnounce
+  //initLastSeen
+  //initAnnounce
 
   def initLastSeen: DataFrame = {
     //Context.spark.sql("DROP TABLE IF EXISTS last_seen")

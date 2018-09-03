@@ -3,6 +3,7 @@ package net.lubet.fic
 import java.net.URL
 
 import net.lubet.fic.lbc.JsonListPage
+import net.lubet.fic._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
@@ -21,42 +22,47 @@ object App extends App {
     Database.selectBaseUrls.flatMap { urlR: Row =>
       val urlS = urlR.getString(0)
       val l = JsonListPage.load(new URL(urlS))
-      val nbPages = l.totalAnnouncesCount / l.announces.size
+      val nbPages = (l.totalAnnouncesCount.toDouble / l.announces.size.toDouble).ceil.toInt
       println(s"$nbPages to crawl !!!")
       //(1 to nbPages).map(urlS + "p-" + _)
       (1 to nbPages).map(urlS + "&page=" + _)
     }
-  println("Repartitionning")
-  listUrls.repartition(4)
-  println("Listing announces URL")
 
-  listUrls.foreach { url: String =>
-    println(s"Downloading $url")
-    try {
-      spark.read.json(
-        spark.createDataset(
-          JsonListPage.load(new URL(url)).announces
-        )
-      )
-        .withColumn("part", lit(partition))
-        .repartition($"part")
-        .write
-        .mode(SaveMode.Append)
-        .json("spark/announce_json")
-    }
-    catch {
-      case e: Throwable =>
-        println(s"Error with $url", e)
-        List.empty
-    }
+  println("Repartitionning")
+  val listUrlsRep = listUrls.repartition(4)
+
+  println("Listing announces URL")
+  val listAnnounces: Dataset[List[String]] = listUrlsRep.map {
+  //val listAnnounces: Dataset[List[String]] = listUrls.map {
+    url: String =>
+      println(s"Downloading $url")
+      try {
+        JsonListPage.load(new URL(url)).announces
+      }
+      catch {
+        case e: Throwable =>
+          println(s"Error with $url", e)
+          //spark.emptyDataset
+          List.empty
+      }
   }
+
+// Trop rapide pour le fair use de LBC ...
+  spark.read.json(
+    spark.createDataset(
+      listAnnounces.collect().flatten
+    )
+  ).withColumn("part", lit(partition))
+    .repartition($"part")
+    .write
+    .mode(SaveMode.Append)
+    .json("spark/announce_json")
+
 
   println("Preparing data")
   val df = Context.spark.read.json("spark/announce_json")
-  df.createOrReplaceTempView("announce")
 
-  val df_p = df
-  val df_tojoin = df_p.
+  val df_tojoin = df.
     groupBy($"list_id").
     agg(
       min($"part").alias("first_seen"),
@@ -65,10 +71,10 @@ object App extends App {
 
   //df.printSchema
   // Objectif : récupérer la plus ancienne et la plus récente date où l'on a récupéré l'annonce
-  val df_u = df
-    .drop("part")
-    .distinct
-    .join(df_tojoin.select(), df.col("list_id") === df_tojoin.col("list_id"))
+  val df_u = df.
+    drop("part").
+    distinct.
+    join(df_tojoin, Seq("list_id"))
 
 
   df_u.createOrReplaceTempView("announce_unique")

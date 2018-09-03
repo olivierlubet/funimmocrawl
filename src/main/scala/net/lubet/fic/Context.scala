@@ -20,7 +20,7 @@ object Context {
       .master("local[4]")
       .appName("FIC")
       .config("spark.sql.warehouse.dir", warehouseLocation)
-      .enableHiveSupport()
+      //.enableHiveSupport()
       .getOrCreate()
   }
 }
